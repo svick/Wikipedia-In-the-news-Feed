@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Linq;
-using System.ServiceModel.Syndication;
 using System.Net;
+using System.ServiceModel.Syndication;
 using System.Text.RegularExpressions;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace WP_ITN_RSS
 {
@@ -21,12 +23,12 @@ namespace WP_ITN_RSS
                 m_wikicodeDate = DateTime.Now;
             }
 
-            return CodeToFeed(m_wikicode);
+            return CodeToFeed(m_wikicode, m_wikicodeDate);
         }
 
         static readonly Regex itemRegex = new Regex(@"^{{\*mp\|(\w+ \d+)}} (.*)$", RegexOptions.Multiline);
 
-        static SyndicationFeed CodeToFeed(string wikicode)
+        static SyndicationFeed CodeToFeed(string wikicode, DateTime wikicodeDate)
         {
             var matches = itemRegex.Matches(wikicode);
 
@@ -35,14 +37,23 @@ namespace WP_ITN_RSS
                         let date = DateTime.ParseExact(dateString, "MMMM dd", System.Globalization.CultureInfo.InvariantCulture)
                         let fixedDate = date > DateTime.Now.AddDays(7) ? date.AddYears(-1) : date
                         let message = match.Groups[2].Value
+                        let title = stripWikiCode(message)
+                        let summary = wikiCodeToHtml(message)
                         select new SyndicationItem
                         {
-                            Summary = new TextSyndicationContent(wikiCodeToHtml(message), TextSyndicationContentKind.Html),
-                            Title = new TextSyndicationContent(stripWikiCode(message), TextSyndicationContentKind.Plaintext),
-                            PublishDate = fixedDate
+                            Title = new TextSyndicationContent(title, TextSyndicationContentKind.Plaintext),
+                            Summary = new TextSyndicationContent(summary, TextSyndicationContentKind.Html),
+                            PublishDate = fixedDate,
+                            Id = ComputeGuid(title)
                         };
 
-            return new SyndicationFeed { Title = new TextSyndicationContent("Wikipedia In the news feed"), Items = items };
+            return new SyndicationFeed(
+                "Wikipedia In the news",
+                "A feed for Wikipedia's In the news",
+                new Uri("http://en.wikipedia.org/wiki/Wikipedia:In_the_news"),
+                "http://itn.svick.org",
+                new DateTimeOffset(wikicodeDate),
+                items);
         }
 
         static readonly Regex wikiLink = new Regex(@"\[\[(?:([^]|]+)\|)?([^]]+)\]\]");
@@ -81,6 +92,14 @@ namespace WP_ITN_RSS
             wc.Encoding = System.Text.Encoding.UTF8;
 
             return wc.DownloadString("http://en.wikipedia.org/w/index.php?title=Template:In_the_news&action=raw");
+        }
+
+        static string ComputeGuid(string text)
+        {
+            SHA1 sha1 = SHA1CryptoServiceProvider.Create();
+            byte[] textBytes = Encoding.UTF8.GetBytes(text);
+            byte[] hashBytes = sha1.ComputeHash(textBytes);
+            return string.Concat(Array.ConvertAll(hashBytes, x => x.ToString("X2")));
         }
     }
 }

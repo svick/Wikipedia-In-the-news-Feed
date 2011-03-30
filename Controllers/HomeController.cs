@@ -1,5 +1,6 @@
 ﻿using System.Web;
 using System.Web.Mvc;
+using WP_ITN_RSS.Models;
 
 namespace WP_ITN_RSS.Controllers
 {

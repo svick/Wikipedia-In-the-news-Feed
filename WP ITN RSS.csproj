@@ -78,6 +78,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\ItnFeed.cs" />
+    <Compile Include="Models\WikiImage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RssActionResult.cs" />
   </ItemGroup>

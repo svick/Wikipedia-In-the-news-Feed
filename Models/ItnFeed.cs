@@ -35,7 +35,7 @@ namespace WP_ITN_RSS.Models
             return CodeToFeed(m_wikicode, m_wikicodeDate);
         }
 
-        static readonly Regex itemRegex = new Regex(@"^{{\*mp\|(\w+ \d+)}}(.*)$", RegexOptions.Multiline);
+        static readonly Regex itemRegex = new Regex(@"^{{\*mp\|(\w+ \d+)}}\s*(.*)$", RegexOptions.Multiline);
 
         static SyndicationFeed CodeToFeed(string wikicode, DateTime wikicodeDate)
         {

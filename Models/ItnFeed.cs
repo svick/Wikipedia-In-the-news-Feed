@@ -67,28 +67,28 @@ namespace WP_ITN_RSS.Models
                 items);
         }
 
-        static readonly Regex wikiLink = new Regex(@"\[\[(?:([^]|]+)\|)?([^]]+)\]\]");
+        static readonly Regex wikiLink = new Regex(@"\[\[(?:([^]|]+)\|)?([^]]+)\]\](\w*)");
         static readonly Regex bold = new Regex("'''(.*?)'''");
         static readonly Regex italic = new Regex("''(.*?)''");
 
         static string StripWikiCode(string wikicode)
         {
-            return wikiLink.Replace(wikicode, "$2").Replace("'''", "").Replace("''", "");
+            return wikiLink.Replace(wikicode, "$2$3").Replace("'''", "").Replace("''", "");
         }
 
-        static string FormatLink(string page, string text)
+        static string FormatLink(string page, string text, string afterText)
         {
             if (page == "")
                 page = text;
 
-            return string.Format("<a href=\"http://en.wikipedia.org/wiki/{0}\">{1}</a>", Uri.EscapeUriString(page), text);
+            return string.Format("<a href=\"http://en.wikipedia.org/wiki/{0}\">{1}{2}</a>", Uri.EscapeUriString(page), text, afterText);
         }
 
         static string WikiCodeToHtml(string wikicode)
         {
             string result = wikiLink.Replace(
                 wikicode,
-                m => FormatLink(m.Groups[1].Value, m.Groups[2].Value));
+                m => FormatLink(m.Groups[1].Value, m.Groups[2].Value, m.Groups[3].Value));
             result = bold.Replace(result, "<b>$1</b>");
             result = italic.Replace(result, "<i>$1</i>");
 

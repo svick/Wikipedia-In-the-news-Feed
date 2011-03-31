@@ -50,18 +50,17 @@ namespace WP_ITN_RSS.Models
                         let message = match.Groups[2].Value
                         let title = RemovePictured(StripWikiCode(message))
                         let summary = ReplaceImage(WikiCodeToHtml(message), image)
-                        select new SyndicationItem
-                        {
-                            Title = new TextSyndicationContent(title, TextSyndicationContentKind.Plaintext),
-                            Summary = new TextSyndicationContent(summary, TextSyndicationContentKind.XHtml),
-                            PublishDate = fixedDate,
-                            Id = ComputeGuid(title)
-                        };
+                        let mainLink = FindMainLink(message)
+                        select new SyndicationItem(
+                            title,
+                            new TextSyndicationContent(summary, TextSyndicationContentKind.XHtml),
+                            mainLink != null ? new Uri(mainLink) : null,
+                            ComputeGuid(title), fixedDate);
 
             return new SyndicationFeed(
                 "Wikipedia In the news",
                 "A feed for Wikipedia's In the news",
-                new Uri("http://en.wikipedia.org/wiki/Wikipedia:In_the_news"),
+                new Uri(FormatPageUrl("Wikipedia:In the news")),
                 "http://itn.svick.org",
                 new DateTimeOffset(wikicodeDate),
                 items);
@@ -76,12 +75,31 @@ namespace WP_ITN_RSS.Models
             return wikiLink.Replace(wikicode, "$2$3").Replace("'''", "").Replace("''", "");
         }
 
+        static string FormatPageUrl(string page)
+        {
+            return "http://en.wikipedia.org/wiki/" + Uri.EscapeUriString(page);
+        }
+
+        static string FindMainLink(string wikicode)
+        {
+            string mainLink = (from Match boldMatch in bold.Matches(wikicode)
+                               from Match linkMatch in wikiLink.Matches(boldMatch.Value)
+                               let page = linkMatch.Groups[1].Value
+                               let text = linkMatch.Groups[2].Value
+                               select page != "" ? page : text).FirstOrDefault();
+
+            if (mainLink == null)
+                return null;
+
+            return FormatPageUrl(mainLink);
+        }
+
         static string FormatLink(string page, string text, string afterText)
         {
             if (page == "")
                 page = text;
 
-            return string.Format("<a href=\"http://en.wikipedia.org/wiki/{0}\">{1}{2}</a>", Uri.EscapeUriString(page), text, afterText);
+            return string.Format("<a href=\"{0}\">{1}{2}</a>", FormatPageUrl(page), text, afterText);
         }
 
         static string WikiCodeToHtml(string wikicode)

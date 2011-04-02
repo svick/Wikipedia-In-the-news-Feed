@@ -128,12 +128,12 @@ namespace WP_ITN_RSS.Models
 
         static string RemovePictured(string titleString)
         {
-            return titleString.Replace("(pictured)", "");
+            return titleString.Replace(" (pictured)", "");
         }
 
         static string ReplaceImage(string itemString, WikiImage image)
         {
-            const string pictured = "<i>(pictured)</i>";
+            const string pictured = " <i>(pictured)</i>";
 
             if (!itemString.Contains(pictured))
                 return itemString;

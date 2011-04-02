@@ -45,7 +45,7 @@ namespace WP_ITN_RSS.Models
 
             var items = from Match match in matches
                         let dateString = match.Groups[1].Value
-                        let date = DateTime.ParseExact(dateString, "MMMM d", System.Globalization.CultureInfo.InvariantCulture)
+                        let date = DateTime.ParseExact(dateString, "MMMM d", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AssumeUniversal).ToUniversalTime()
                         let fixedDate = date > DateTime.Now.AddDays(7) ? date.AddYears(-1) : date
                         let message = match.Groups[2].Value
                         let title = RemovePictured(StripWikiCode(message))

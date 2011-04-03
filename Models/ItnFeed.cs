@@ -35,7 +35,7 @@ namespace WP_ITN_RSS.Models
             return CodeToFeed(m_wikicode, m_wikicodeDate);
         }
 
-        static readonly Regex itemRegex = new Regex(@"^{{\*mp\|(\w+ \d+)}}\s*(.*)$", RegexOptions.Multiline);
+        static readonly Regex itemRegex = new Regex(@"^{{\*mp\|(\w+ \d+)}}\s*([^{<]*)$", RegexOptions.Multiline | RegexOptions.Singleline);
 
         static SyndicationFeed CodeToFeed(string wikicode, DateTime wikicodeDate)
         {
@@ -72,7 +72,7 @@ namespace WP_ITN_RSS.Models
 
         static string StripWikiCode(string wikicode)
         {
-            return wikiLink.Replace(wikicode, "$2$3").Replace("'''", "").Replace("''", "");
+            return wikiLink.Replace(wikicode, "$2$3").Replace("'''", "").Replace("''", "").Replace("\n", "");
         }
 
         static string FormatPageUrl(string page)

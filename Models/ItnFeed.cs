@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.ServiceModel.Syndication;
@@ -46,7 +46,7 @@ namespace WP_ITN_RSS.Models
 
             var items = from Match match in matches
                         let dateString = match.Groups[1].Value
-                        let date = DateTime.ParseExact(dateString, "MMMM d", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AssumeUniversal).ToUniversalTime()
+                        let date = DateTime.ParseExact(dateString, "MMMM d", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal).ToUniversalTime()
                         let fixedDate = date > DateTime.Now.AddDays(7) ? date.AddYears(-1) : date
                         let message = match.Groups[2].Value
                         let title = RemovePictured(StripWikiCode(message))
@@ -123,7 +123,11 @@ namespace WP_ITN_RSS.Models
         static string ComputeGuid(string text)
         {
             SHA1 sha1 = SHA1.Create();
-            byte[] textBytes = Encoding.UTF8.GetBytes(text);
+            byte[] textBytes =
+                Encoding.UTF8.GetBytes(
+                    text.ToUpper()
+                        .Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.OtherPunctuation)
+                        .ToArray());
             byte[] hashBytes = sha1.ComputeHash(textBytes);
             return string.Concat(Array.ConvertAll(hashBytes, x => x.ToString("X2")));
         }

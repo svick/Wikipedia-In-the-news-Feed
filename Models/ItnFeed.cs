@@ -55,8 +55,8 @@ namespace WP_ITN_RSS.Models
                         select new SyndicationItem(
                             title,
                             new TextSyndicationContent(summary, TextSyndicationContentKind.XHtml),
-                            mainLink != null ? new Uri(mainLink) : null,
-                            ComputeGuid(title),
+                            mainLink != null ? new Uri(FormatPageUrl(mainLink)) : null,
+                            mainLink ?? ComputeGuid(title),
                             fixedDate);
 
             return new SyndicationFeed(
@@ -93,7 +93,7 @@ namespace WP_ITN_RSS.Models
             if (mainLink == null)
                 return null;
 
-            return FormatPageUrl(mainLink);
+            return mainLink;
         }
 
         static string FormatLink(string page, string text, string afterText)

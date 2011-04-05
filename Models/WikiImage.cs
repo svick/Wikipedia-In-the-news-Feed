@@ -14,6 +14,7 @@ namespace WP_ITN_RSS.Models
         {
             ImageUrl = new Uri(imageUrl);
             DescriptionUrl = new Uri(descriptionUrl);
+            Title = title;
         }
 
         public WikiImage(string imageUrl, int width, int height, string descriptionUrl, string title)

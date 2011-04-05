@@ -4,7 +4,7 @@ using System.Web.UI;
 
 namespace WP_ITN_RSS
 {
-    public partial class _Default : Page
+    public partial class Default : Page
     {
         public void Page_Load(object sender, System.EventArgs e)
         {

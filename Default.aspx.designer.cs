@@ -10,6 +10,6 @@
 namespace WP_ITN_RSS {
     
     
-    public partial class _Default {
+    public partial class Default {
     }
 }

@@ -12,7 +12,7 @@ namespace WP_ITN_RSS
         {
             context.HttpContext.Response.ContentType = "application/rss+xml";
 
-            Rss20FeedFormatter rssFormatter = new Rss20FeedFormatter(Feed);
+            var rssFormatter = new Rss20FeedFormatter(Feed);
             using (XmlWriter writer = XmlWriter.Create(context.HttpContext.Response.Output))
             {
                 rssFormatter.WriteTo(writer);

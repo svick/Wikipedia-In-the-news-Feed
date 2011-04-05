@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.ServiceModel.Syndication;
@@ -20,7 +21,7 @@ namespace WP_ITN_RSS.Models
         {
             var webClient = new WebClient();
             webClient.Headers[HttpRequestHeader.UserAgent] = "[[w:en:User:Svick]] ITN Feed";
-            webClient.Encoding = System.Text.Encoding.UTF8;
+            webClient.Encoding = Encoding.UTF8;
             return webClient;
         }
 
@@ -35,11 +36,11 @@ namespace WP_ITN_RSS.Models
             return CodeToFeed(m_wikicode, m_wikicodeDate);
         }
 
-        static readonly Regex itemRegex = new Regex(@"^{{\*mp\|(\w+ \d+)}}\s*([^{<]*)$", RegexOptions.Multiline | RegexOptions.Singleline);
+        static readonly Regex ItemRegex = new Regex(@"^{{\*mp\|(\w+ \d+)}}\s*([^{<]*)$", RegexOptions.Multiline | RegexOptions.Singleline);
 
         static SyndicationFeed CodeToFeed(string wikicode, DateTime wikicodeDate)
         {
-            var matches = itemRegex.Matches(wikicode);
+            var matches = ItemRegex.Matches(wikicode);
 
             var image = GetImage(wikicode);
 
@@ -55,7 +56,8 @@ namespace WP_ITN_RSS.Models
                             title,
                             new TextSyndicationContent(summary, TextSyndicationContentKind.XHtml),
                             mainLink != null ? new Uri(mainLink) : null,
-                            ComputeGuid(title), fixedDate);
+                            ComputeGuid(title),
+                            fixedDate);
 
             return new SyndicationFeed(
                 "Wikipedia In the news",
@@ -66,13 +68,13 @@ namespace WP_ITN_RSS.Models
                 items);
         }
 
-        static readonly Regex wikiLink = new Regex(@"\[\[(?:([^]|]+)\|)?([^]]+)\]\](\w*)");
-        static readonly Regex bold = new Regex("'''(.*?)'''");
-        static readonly Regex italic = new Regex("''(.*?)''");
+        static readonly Regex WikiLink = new Regex(@"\[\[(?:([^]|]+)\|)?([^]]+)\]\](\w*)");
+        static readonly Regex Bold = new Regex("'''(.*?)'''");
+        static readonly Regex Italic = new Regex("''(.*?)''");
 
         static string StripWikiCode(string wikicode)
         {
-            return wikiLink.Replace(wikicode, "$2$3").Replace("'''", "").Replace("''", "").Replace("\n", "");
+            return WikiLink.Replace(wikicode, "$2$3").Replace("'''", "").Replace("''", "").Replace("\n", "");
         }
 
         static string FormatPageUrl(string page)
@@ -82,8 +84,8 @@ namespace WP_ITN_RSS.Models
 
         static string FindMainLink(string wikicode)
         {
-            string mainLink = (from Match boldMatch in bold.Matches(wikicode)
-                               from Match linkMatch in wikiLink.Matches(boldMatch.Value)
+            string mainLink = (from Match boldMatch in Bold.Matches(wikicode)
+                               from Match linkMatch in WikiLink.Matches(boldMatch.Value)
                                let page = linkMatch.Groups[1].Value
                                let text = linkMatch.Groups[2].Value
                                select page != "" ? page : text).FirstOrDefault();
@@ -104,11 +106,11 @@ namespace WP_ITN_RSS.Models
 
         static string WikiCodeToHtml(string wikicode)
         {
-            string result = wikiLink.Replace(
+            string result = WikiLink.Replace(
                 wikicode,
                 m => FormatLink(m.Groups[1].Value, m.Groups[2].Value, m.Groups[3].Value));
-            result = bold.Replace(result, "<b>$1</b>");
-            result = italic.Replace(result, "<i>$1</i>");
+            result = Bold.Replace(result, "<b>$1</b>");
+            result = Italic.Replace(result, "<i>$1</i>");
 
             return result;
         }
@@ -120,7 +122,7 @@ namespace WP_ITN_RSS.Models
 
         static string ComputeGuid(string text)
         {
-            SHA1 sha1 = SHA1CryptoServiceProvider.Create();
+            SHA1 sha1 = SHA1.Create();
             byte[] textBytes = Encoding.UTF8.GetBytes(text);
             byte[] hashBytes = sha1.ComputeHash(textBytes);
             return string.Concat(Array.ConvertAll(hashBytes, x => x.ToString("X2")));
@@ -141,11 +143,11 @@ namespace WP_ITN_RSS.Models
             return image.ToHtml() + itemString.Replace(pictured, "");
         }
 
-        static readonly Regex imageRegex = new Regex(@"{{In the news/image\n\s*\|\s*image\s*=\s*([^|}]+)\s*\|\s*size\s*=\s*([0-9px]+)\s*|\s*title\s*=\s*([^|}]+)\s*(?:}}|\|)", RegexOptions.Singleline);
+        static readonly Regex ImageRegex = new Regex(@"{{In the news/image\n\s*\|\s*image\s*=\s*([^|}]+)\s*\|\s*size\s*=\s*([0-9px]+)\s*|\s*title\s*=\s*([^|}]+)\s*(?:}}|\|)", RegexOptions.Singleline);
 
         static WikiImage GetImage(string wikicode)
         {
-            var match = imageRegex.Match(wikicode);
+            var match = ImageRegex.Match(wikicode);
             if (!match.Success)
                 return null;
 
@@ -159,7 +161,9 @@ namespace WP_ITN_RSS.Models
             var size = ParseSizeString(sizeString);
 
             if (size.Item1.HasValue)
+            {
                 queryUrl += "&iiurlwidth=" + size.Item1.Value;
+            }
             if (size.Item2.HasValue)
                 queryUrl += "&iiurlheight=" + size.Item2.Value;
 

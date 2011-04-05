@@ -1,5 +1,4 @@
-﻿using System.Web;
-using System.Web.Mvc;
+﻿using System.Web.Mvc;
 using WP_ITN_RSS.Models;
 
 namespace WP_ITN_RSS.Controllers
@@ -11,7 +10,7 @@ namespace WP_ITN_RSS.Controllers
         {
             var application = HttpContext.Application;
 
-            string itnFeedKey = "itnFeed";
+            const string itnFeedKey = "itnFeed";
 
             if (application[itnFeedKey] == null)
                 application[itnFeedKey] = new ItnFeed();

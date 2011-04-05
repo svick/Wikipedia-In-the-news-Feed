@@ -49,8 +49,8 @@ namespace WP_ITN_RSS.Models
                         let date = DateTime.ParseExact(dateString, "MMMM d", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal).ToUniversalTime()
                         let fixedDate = date > DateTime.Now.AddDays(7) ? date.AddYears(-1) : date
                         let message = match.Groups[2].Value
-                        let title = RemovePictured(StripWikiCode(message))
-                        let summary = ReplaceImage(WikiCodeToHtml(message), image)
+                        let title = StripWikiCode(RemovePictured(message))
+                        let summary = WikiCodeToHtml(AddImage(message, image))
                         let mainLink = FindMainLink(message)
                         select new SyndicationItem(
                             title,
@@ -132,19 +132,19 @@ namespace WP_ITN_RSS.Models
             return string.Concat(Array.ConvertAll(hashBytes, x => x.ToString("X2")));
         }
 
+        private static readonly Regex PicturedRegex = new Regex(@" ''\(.* pictured\)''");
+
         static string RemovePictured(string titleString)
         {
-            return titleString.Replace(" (pictured)", "");
+            return PicturedRegex.Replace(titleString, "");
         }
 
-        static string ReplaceImage(string itemString, WikiImage image)
+        static string AddImage(string itemString, WikiImage image)
         {
-            const string pictured = " <i>(pictured)</i>";
-
-            if (!itemString.Contains(pictured))
+            if (!PicturedRegex.IsMatch(itemString))
                 return itemString;
 
-            return image.ToHtml() + itemString.Replace(pictured, "");
+            return image.ToHtml() + itemString;
         }
 
         static readonly Regex ImageRegex = new Regex(@"{{In the news/image\n\s*\|\s*image\s*=\s*([^|}]+)\s*\|\s*size\s*=\s*([0-9px]+)\s*|\s*title\s*=\s*([^|}]+)\s*(?:}}|\|)", RegexOptions.Singleline);

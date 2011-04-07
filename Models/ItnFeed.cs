@@ -132,7 +132,7 @@ namespace WP_ITN_RSS.Models
             return string.Concat(Array.ConvertAll(hashBytes, x => x.ToString("X2")));
         }
 
-        private static readonly Regex PicturedRegex = new Regex(@" ''\(.* pictured\)''");
+        private static readonly Regex PicturedRegex = new Regex(@" ''\(.*pictured\)''");
 
         static string RemovePictured(string titleString)
         {

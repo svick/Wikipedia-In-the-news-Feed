@@ -74,12 +74,12 @@ namespace WP_ITN_RSS.Models
 
         static string StripWikiCode(string wikicode)
         {
-            return WikiLink.Replace(wikicode, "$2$3").Replace("'''", "").Replace("''", "").Replace("\n", "");
+            return WebUtility.HtmlDecode(WikiLink.Replace(wikicode, "$2$3").Replace("'''", "").Replace("''", "").Replace("\n", ""));
         }
 
         static string FormatPageUrl(string page)
         {
-            return "http://en.wikipedia.org/wiki/" + Uri.EscapeUriString(page);
+            return "http://en.wikipedia.org/wiki/" + Uri.EscapeUriString(page.Replace("&nbsp;", " "));
         }
 
         static string FindMainLink(string wikicode)

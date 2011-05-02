@@ -3,3 +3,5 @@ obj/
 *.suo
 *.user
 *.Publish.xml
+/App_Data/
+_Resharper*

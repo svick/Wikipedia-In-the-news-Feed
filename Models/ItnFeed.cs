@@ -141,18 +141,18 @@ namespace WP_ITN_RSS.Models
 
         static string AddImage(string itemString, WikiImage image)
         {
-            if (!PicturedRegex.IsMatch(itemString))
+            if (image == null || !PicturedRegex.IsMatch(itemString))
                 return itemString;
 
             return image.ToHtml() + itemString;
         }
 
-        static readonly Regex ImageRegex = new Regex(@"{{In the news/image\n\s*\|\s*image\s*=\s*([^|}]+)\s*\|\s*size\s*=\s*([0-9px]+)\s*|\s*title\s*=\s*([^|}]+)\s*(?:}}|\|)", RegexOptions.Singleline);
+        static readonly Regex ImageRegex = new Regex(@"{{In the news/image\n\s*\|\s*image\s*=\s*([^|}]*)\s*\|\s*size\s*=\s*([0-9px]+)\s*|\s*title\s*=\s*([^|}]+)\s*(?:}}|\|)", RegexOptions.Singleline);
 
         static WikiImage GetImage(string wikicode)
         {
             var match = ImageRegex.Match(wikicode);
-            if (!match.Success)
+            if (!match.Success || string.IsNullOrWhiteSpace(match.Groups[1].Value))
                 return null;
 
             return GetImage(match.Groups[1].Value, match.Groups[2].Value, match.Groups[3].Value);

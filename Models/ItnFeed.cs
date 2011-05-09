@@ -160,7 +160,10 @@ namespace WP_ITN_RSS.Models
 
         static WikiImage GetImage(string imageName, string sizeString, string title)
         {
-            string queryUrl = "http://en.wikipedia.org/w/api.php?format=xml&action=query&prop=imageinfo&iiprop=url&titles=File:" + Uri.EscapeUriString(imageName);
+            if (!imageName.StartsWith("File:"))
+                imageName = "File:" + imageName;
+
+            string queryUrl = "http://en.wikipedia.org/w/api.php?format=xml&action=query&prop=imageinfo&iiprop=url&titles=" + Uri.EscapeUriString(imageName);
 
             var size = ParseSizeString(sizeString);
 

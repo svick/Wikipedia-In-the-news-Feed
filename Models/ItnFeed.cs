@@ -79,7 +79,7 @@ namespace WP_ITN_RSS.Models
 
         static string FormatPageUrl(string page)
         {
-            return "http://en.wikipedia.org/wiki/" + Uri.EscapeUriString(page.Replace("&nbsp;", " "));
+            return "http://en.wikipedia.org/wiki/" + Uri.EscapeUriString(page.Replace("&nbsp;", " ").Replace(' ', '_'));
         }
 
         static string FindMainLink(string wikicode)

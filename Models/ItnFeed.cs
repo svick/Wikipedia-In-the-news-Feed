@@ -84,16 +84,20 @@ namespace WP_ITN_RSS.Models
 
         static string FindMainLink(string wikicode)
         {
-            string mainLink = (from Match boldMatch in Bold.Matches(wikicode)
-                               from Match linkMatch in WikiLink.Matches(boldMatch.Value)
-                               let page = linkMatch.Groups[1].Value
-                               let text = linkMatch.Groups[2].Value
-                               select page != "" ? page : text).FirstOrDefault();
+            var linksInBold = from Match boldMatch in Bold.Matches(wikicode)
+                              from Match linkMatch in WikiLink.Matches(boldMatch.Value)
+                              let page = linkMatch.Groups[1].Value
+                              let text = linkMatch.Groups[2].Value
+                              select page != "" ? page : text;
 
-            if (mainLink == null)
-                return null;
+            var boldInLinks = from Match linkMatch in WikiLink.Matches(wikicode)
+                              let page = linkMatch.Groups[1].Value
+                              let text = linkMatch.Groups[2].Value
+                              let boldMatch = Bold.Match(text)
+                              where boldMatch.Success
+                              select page != "" ? page : boldMatch.Groups[1].Value;
 
-            return mainLink;
+            return linksInBold.Concat(boldInLinks).FirstOrDefault();
         }
 
         static string FormatLink(string page, string text, string afterText)

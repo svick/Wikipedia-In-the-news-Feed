@@ -36,7 +36,7 @@ namespace WP_ITN_RSS.Models
             return CodeToFeed(m_wikicode, m_wikicodeDate);
         }
 
-        static readonly Regex ItemRegex = new Regex(@"^{{\*mp\|(\w+ \d+)}}\s*([^{<]*)$", RegexOptions.Multiline | RegexOptions.Singleline);
+        static readonly Regex ItemRegex = new Regex(@"^{{\*mp\|(\w+ \d+)}}\s*([^<]*?)$(?=\s*({{\*mp|</ul>))", RegexOptions.Multiline | RegexOptions.Singleline);
 
         static SyndicationFeed CodeToFeed(string wikicode, DateTime wikicodeDate)
         {
@@ -69,12 +69,19 @@ namespace WP_ITN_RSS.Models
         }
 
         static readonly Regex WikiLink = new Regex(@"\[\[(?:([^]|]+)\|)?([^]]+)\]\](\w*)");
+        static readonly Regex NoWrap = new Regex(@"{{nowrap\|(.*?)}}");
         static readonly Regex Bold = new Regex("'''(.*?)'''");
         static readonly Regex Italic = new Regex("''(.*?)''");
 
         static string StripWikiCode(string wikicode)
         {
-            return WebUtility.HtmlDecode(WikiLink.Replace(wikicode, "$2$3").Replace("'''", "").Replace("''", "").Replace("\n", ""));
+            var replaced = wikicode
+                .Replace(WikiLink, "$2$3")
+                .Replace(NoWrap, "$1")
+                .Replace("'''", "")
+                .Replace("''", "")
+                .Replace("\n", "");
+            return WebUtility.HtmlDecode(replaced);
         }
 
         static string FormatPageUrl(string page)
@@ -110,13 +117,11 @@ namespace WP_ITN_RSS.Models
 
         static string WikiCodeToHtml(string wikicode)
         {
-            string result = WikiLink.Replace(
-                wikicode,
-                m => FormatLink(m.Groups[1].Value, m.Groups[2].Value, m.Groups[3].Value));
-            result = Bold.Replace(result, "<b>$1</b>");
-            result = Italic.Replace(result, "<i>$1</i>");
-
-            return result;
+            return wikicode
+                .Replace(WikiLink, m => FormatLink(m.Groups[1].Value, m.Groups[2].Value, m.Groups[3].Value))
+                .Replace(NoWrap, "<span class=\"nowrap\">$1</span>")
+                .Replace(Bold, "<b>$1</b>")
+                .Replace(Italic, "<i>$1</i>");
         }
 
         string GetCode()
@@ -215,6 +220,19 @@ namespace WP_ITN_RSS.Models
                 height = int.Parse(match.Groups[2].Value);
 
             return Tuple.Create(width, height);
+        }
+    }
+
+    static class StringExtensions
+    {
+        public static string Replace(this string original, Regex regex, string replacement)
+        {
+            return regex.Replace(original, replacement);
+        }
+
+        public static string Replace(this string original, Regex regex, MatchEvaluator evaluator)
+        {
+            return regex.Replace(original, evaluator);
         }
     }
 }

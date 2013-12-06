@@ -36,7 +36,7 @@ namespace WP_ITN_RSS.Models
             return CodeToFeed(m_wikicode, m_wikicodeDate);
         }
 
-        static readonly Regex ItemRegex = new Regex(@"^{{\*mp\|(\w+ \d+)}}\s*([^<]*?)$(?=\s*({{\*mp|</ul>))", RegexOptions.Multiline | RegexOptions.Singleline);
+        static readonly Regex ItemRegex = new Regex(@"^\*<!--(.*?)-->\s*([^<]*?)$", RegexOptions.Multiline | RegexOptions.Singleline);
 
         static SyndicationFeed CodeToFeed(string wikicode, DateTime wikicodeDate)
         {
@@ -46,7 +46,7 @@ namespace WP_ITN_RSS.Models
 
             var items = from Match match in matches
                         let dateString = match.Groups[1].Value
-                        let date = DateTime.ParseExact(dateString, "MMMM d", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal).ToUniversalTime()
+                        let date = DateTime.ParseExact(dateString, "MMM d", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal).ToUniversalTime()
                         let fixedDate = date > DateTime.Now.AddDays(7) ? date.AddYears(-1) : date
                         let message = match.Groups[2].Value
                         let title = StripWikiCode(RemovePictured(message))

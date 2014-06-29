@@ -70,7 +70,8 @@ namespace WP_ITN_RSS.Models
 
         static readonly Regex WikiLink = new Regex(@"\[\[(?:([^]|]+)\|)?([^]]+)\]\](\w*)");
         static readonly Regex NoWrap = new Regex(@"{{nowrap\|(.*?)}}");
-        static readonly Regex Nbsp = new Regex(@"{{nbsp}}");
+        static readonly string Nbsp = "{{nbsp}}";
+        static readonly string AposS = "{{'s}}";
         static readonly Regex Bold = new Regex("'''(.*?)'''");
         static readonly Regex Italic = new Regex("''(.*?)''");
 
@@ -80,6 +81,7 @@ namespace WP_ITN_RSS.Models
                 .Replace(WikiLink, "$2$3")
                 .Replace(NoWrap, "$1")
                 .Replace(Nbsp, " ")
+                .Replace(AposS, "'s")
                 .Replace("'''", "")
                 .Replace("''", "")
                 .Replace("\n", "");
@@ -123,6 +125,7 @@ namespace WP_ITN_RSS.Models
                 .Replace(WikiLink, m => FormatLink(m.Groups[1].Value, m.Groups[2].Value, m.Groups[3].Value))
                 .Replace(NoWrap, "<span class=\"nowrap\">$1</span>")
                 .Replace(Nbsp, "&nbsp;")
+                .Replace(AposS, "'s")
                 .Replace(Bold, "<b>$1</b>")
                 .Replace(Italic, "<i>$1</i>");
         }

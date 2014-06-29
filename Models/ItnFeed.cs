@@ -59,13 +59,22 @@ namespace WP_ITN_RSS.Models
                             mainLink ?? ComputeGuid(title),
                             fixedDate);
 
+            var wikipediaItnLink = new Uri(FormatPageUrl("Wikipedia:In the news"));
+
             return new SyndicationFeed(
                 "Wikipedia In the news",
                 "A feed for Wikipedia's In the news",
-                new Uri(FormatPageUrl("Wikipedia:In the news")),
+                wikipediaItnLink,
                 "http://itn.svick.org",
                 new DateTimeOffset(wikicodeDate),
-                items);
+                items)
+            {
+                Links =
+                {
+                    new SyndicationLink(wikipediaItnLink),
+                    new SyndicationLink(new Uri("https://github.com/svick/Wikipedia-In-the-news-Feed/"))
+                }
+            };
         }
 
         static readonly Regex WikiLink = new Regex(@"\[\[(?:([^]|]+)\|)?([^]]+)\]\](\w*)");
